@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071b28" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c8f05a'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='34'%3E瓜%3C/text%3E%3C/svg%3E" />
+    <meta
+      name="description"
+      content="走進瓜瓜家族與燈燈王國的互動 3D 角色宇宙，在海底與陸地之間探索每位角色。"
+    />
+    <title>瓜瓜家族 × 燈燈王國｜互動 3D 角色宇宙</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three.module.js",
+          "three/addons/controls/OrbitControls.js": "./vendor/OrbitControls.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="loading" id="loading" aria-live="polite">
+      <div class="loading__orb"></div>
+      <p>點亮角色宇宙…</p>
+    </div>
+
+    <header class="topbar">
+      <a class="brand" href="#theater" aria-label="回到互動舞台">
+        <span class="brand__mark">瓜</span>
+        <span><b>瓜瓜 × 燈燈</b><small>CHARACTER UNIVERSE</small></span>
+      </a>
+      <nav class="topbar__nav" aria-label="主要選單">
+        <a href="#theater">互動舞台</a>
+        <a href="#cast">角色圖鑑</a>
+        <a href="#references">設定參考</a>
+      </nav>
+      <button class="sound-button" id="motionToggle" type="button" aria-pressed="false">
+        <span class="sound-button__icon">✦</span><span>動態開啟</span>
+      </button>
+    </header>
+
+    <main>
+      <section class="theater world-sea" id="theater" aria-label="3D 互動角色舞台">
+        <canvas id="worldCanvas" aria-label="可拖曳旋轉的 3D 角色場景"></canvas>
+        <div class="theater__grain" aria-hidden="true"></div>
+
+        <div class="world-switch" role="group" aria-label="場景切換">
+          <span>場景</span>
+          <button class="is-active" type="button" data-world="sea">◌ 海底</button>
+          <button type="button" data-world="land">☀ 陸地</button>
+        </div>
+
+        <article class="character-panel" aria-live="polite">
+          <p class="eyebrow"><span id="characterNo">NO. 01</span> <i></i> <span id="characterWorld">陸地居民</span></p>
+          <h1 id="characterName">小黃瓜</h1>
+          <p class="character-panel__role" id="characterRole">瓜族 · 童子軍</p>
+          <p class="character-panel__description" id="characterDescription">
+            正值青春期、任性愛玩，卻有一顆勇於冒險的心。每一次出發，都是花園裡的新故事。
+          </p>
+          <div class="stats" aria-label="角色屬性">
+            <span><small>能量</small><b id="statEnergy">88</b></span>
+            <span><small>親和</small><b id="statKind">96</b></span>
+            <span><small>勇氣</small><b id="statCourage">92</b></span>
+          </div>
+          <div class="panel-actions">
+            <button class="primary-action" id="openCast" type="button">
+              選擇角色 <span>↗</span>
+            </button>
+            <button class="round-action" id="prevCharacter" type="button" aria-label="上一位角色">←</button>
+            <button class="round-action" id="nextCharacter" type="button" aria-label="下一位角色">→</button>
+          </div>
+        </article>
+
+        <div class="stage-hint">
+          <span class="stage-hint__mouse"></span>
+          <p><b>拖曳探索</b><small>旋轉、縮放與靠近角色</small></p>
+        </div>
+
+        <div class="scene-label" aria-hidden="true">
+          <span id="sceneChinese">深海光域</span>
+          <b id="sceneEnglish">THE LUMINOUS DEEP</b>
+        </div>
+      </section>
+
+      <section class="cast-section" id="cast">
+        <div class="section-heading">
+          <p class="eyebrow">MEET THE CAST <i></i> 19 CHARACTERS</p>
+          <h2>今天，想和哪一位<br />一起去冒險？</h2>
+          <p>點選角色卡，舞台會立刻為他換上專屬燈光與場景。</p>
+        </div>
+        <div class="filter-row" role="group" aria-label="角色分類">
+          <button class="is-active" type="button" data-filter="all">全部 19</button>
+          <button type="button" data-filter="land">瓜瓜家族</button>
+          <button type="button" data-filter="sea">燈燈王國</button>
+        </div>
+        <div class="cast-grid" id="castGrid"></div>
+      </section>
+
+      <section class="references" id="references">
+        <div class="references__copy">
+          <p class="eyebrow">ORIGINAL REFERENCES <i></i> ARCHIVE</p>
+          <h2>從設定卡，<br />走進立體世界。</h2>
+          <p>
+            網頁角色介紹依照資料夾中的角色立繪與設定卡整理；可點擊圖片放大，比對最初的色彩、性格與角色定位。
+          </p>
+        </div>
+        <div class="reference-track" id="referenceTrack"></div>
+      </section>
+    </main>
+
+    <dialog class="cast-dialog" id="castDialog" aria-labelledby="dialogTitle">
+      <div class="cast-dialog__header">
+        <div><small>CHARACTER SELECT</small><h2 id="dialogTitle">選擇你的冒險夥伴</h2></div>
+        <button type="button" id="closeCast" aria-label="關閉角色選單">×</button>
+      </div>
+      <div class="cast-dialog__grid" id="dialogGrid"></div>
+    </dialog>
+
+    <dialog class="lightbox" id="lightbox">
+      <button type="button" id="closeLightbox" aria-label="關閉圖片">×</button>
+      <img id="lightboxImage" alt="" />
+      <p id="lightboxCaption"></p>
+    </dialog>
+
+    <noscript>此互動網站需要啟用 JavaScript 才能顯示 3D 舞台。</noscript>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
