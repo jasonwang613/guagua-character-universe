@@ -430,6 +430,14 @@ document.addEventListener("click", (event) => {
   }
 });
 
+document.addEventListener("pointerdown", (event) => {
+  const card = event.target.closest(".cast-card");
+  if (!card) return;
+  card.classList.remove("is-hopping");
+  requestAnimationFrame(() => card.classList.add("is-hopping"));
+  setTimeout(() => card.classList.remove("is-hopping"), 560);
+});
+
 $$(".world-switch button").forEach((button) => button.addEventListener("click", () => setWorld(button.dataset.world)));
 $$(".filter-row button").forEach((button) => button.addEventListener("click", () => {
   $$(".filter-row button").forEach((item) => item.classList.toggle("is-active", item === button));
