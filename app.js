@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CinematicWorlds } from "./worlds.js";
+import { CharacterEffects } from "./effects.js";
 
 const A = "./assets/characters/";
 const characters = [
@@ -129,11 +130,13 @@ let currentWorld = "land";
 let motionEnabled = !matchMedia("(prefers-reduced-motion: reduce)").matches;
 let characterObject;
 let characterMaterial;
+let characterPlane;
 let targetCharacterScale = 1;
 
 const canvas = $("#worldCanvas");
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x0b526b, 0.035);
+const characterEffects = new CharacterEffects(scene);
 
 const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 100);
 camera.position.set(1.8, 2.7, 11);
@@ -313,6 +316,8 @@ function setWorld(world) {
 
 function disposeCharacter() {
   if (!characterObject) return;
+  characterEffects.clearTarget();
+  characterPlane = null;
   characterObject.traverse((object) => {
     object.geometry?.dispose();
     if (object.material?.map) object.material.map.dispose();
@@ -337,6 +342,8 @@ function loadCharacter(character) {
       new THREE.PlaneGeometry(width, targetHeight),
       new THREE.MeshBasicMaterial({ map: texture, transparent: true, alphaTest: .015, side: THREE.DoubleSide })
     );
+    characterPlane = plane;
+    plane.userData.isCharacterHitTarget = true;
     characterMaterial = plane.material;
     characterObject.add(plane);
 
@@ -357,6 +364,10 @@ function loadCharacter(character) {
 
     characterObject.scale.setScalar(.001);
     scene.add(characterObject);
+    characterEffects.setTarget(characterObject, plane, character);
+    $("#powerName").textContent = characterEffects.profileName(character.id);
+    canvas.classList.add("is-power-ready");
+    setTimeout(() => triggerCharacterPower(.65), 260);
     targetCharacterScale = 1;
     $("#loading").classList.add("is-hidden");
   });
@@ -437,6 +448,40 @@ $("#motionToggle").addEventListener("click", (event) => {
   event.currentTarget.querySelector("span:last-child").textContent = motionEnabled ? "動態開啟" : "動態暫停";
 });
 
+function triggerCharacterPower(strength = 1) {
+  if (!characterObject || !characterPlane) return;
+  if (!motionEnabled) {
+    motionEnabled = true;
+    $("#motionToggle").setAttribute("aria-pressed", "true");
+    $("#motionToggle").querySelector("span:last-child").textContent = "動態開啟";
+  }
+  characterEffects.trigger(strength);
+  const hint = $("#powerHint");
+  hint.classList.remove("is-bursting");
+  requestAnimationFrame(() => hint.classList.add("is-bursting"));
+  setTimeout(() => hint.classList.remove("is-bursting"), 650);
+}
+
+$("#powerHint").addEventListener("click", () => triggerCharacterPower(1.15));
+
+const raycaster = new THREE.Raycaster();
+const pointerNdc = new THREE.Vector2();
+let pointerDownPosition = null;
+canvas.addEventListener("pointerdown", (event) => {
+  pointerDownPosition = { x: event.clientX, y: event.clientY };
+});
+canvas.addEventListener("pointerup", (event) => {
+  if (!pointerDownPosition || !characterPlane) return;
+  const distance = Math.hypot(event.clientX - pointerDownPosition.x, event.clientY - pointerDownPosition.y);
+  pointerDownPosition = null;
+  if (distance > 9) return;
+  const rect = canvas.getBoundingClientRect();
+  pointerNdc.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNdc.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNdc, camera);
+  if (raycaster.intersectObject(characterPlane, false).length) triggerCharacterPower(1.25);
+});
+
 for (const dialog of $$("dialog")) {
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) dialog.close();
@@ -491,6 +536,7 @@ function animate() {
     }
   });
   cinematicWorlds.update(t, motionEnabled ? delta : 0);
+  characterEffects.update(t, delta, motionEnabled);
   renderer.render(scene, camera);
 }
 
