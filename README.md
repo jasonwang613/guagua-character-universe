@@ -4,6 +4,8 @@
 
 ![網站桌面版預覽](./site-desktop.png)
 
+![海底場景預覽](./site-sea.png)
+
 ## 互動內容
 
 - 19 位角色介紹與角色選擇器
@@ -33,3 +35,10 @@ npx serve .
 ## 素材
 
 角色圖片與角色設定卡由專案提供的 `3D` 參考資料夾整理與最佳化。
+
+場景模型使用：
+
+- [Kenney Nature Kit](https://kenney.nl/assets/nature-kit) — CC0
+- [Quaternius Animated Fish Pack](https://quaternius.com/packs/animatedfish.html) — CC0
+
+完整來源與授權說明請見 [ASSET_LICENSES.md](./ASSET_LICENSES.md)。

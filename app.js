@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { CinematicWorlds } from "./worlds.js";
 
 const A = "./assets/characters/";
 const characters = [
@@ -138,7 +139,7 @@ const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 10
 camera.position.set(1.8, 2.7, 11);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 900 ? 1.35 : 1.8));
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -163,6 +164,8 @@ scene.add(keyLight);
 const rimLight = new THREE.PointLight(0x55e9ff, 25, 18);
 rimLight.position.set(3, 3, -3);
 scene.add(rimLight);
+
+const cinematicWorlds = new CinematicWorlds({ scene, camera, rimLight, keyLight });
 
 let environment = new THREE.Group();
 scene.add(environment);
@@ -300,9 +303,7 @@ function clearEnvironment() {
 
 function setWorld(world) {
   currentWorld = world;
-  clearEnvironment();
-  if (world === "sea") addSeaEnvironment();
-  else addLandEnvironment();
+  cinematicWorlds.setWorld(world);
   ui.theater.classList.toggle("world-sea", world === "sea");
   ui.theater.classList.toggle("world-land", world === "land");
   $$(".world-switch button").forEach((button) => button.classList.toggle("is-active", button.dataset.world === world));
@@ -468,7 +469,8 @@ addEventListener("resize", resize);
 const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
+  const delta = clock.getDelta();
+  const t = clock.elapsedTime;
   controls.update();
 
   if (characterObject) {
@@ -488,6 +490,7 @@ function animate() {
       child.rotation.z = Math.sin(t * .7 + index) * .025;
     }
   });
+  cinematicWorlds.update(t, motionEnabled ? delta : 0);
   renderer.render(scene, camera);
 }
 

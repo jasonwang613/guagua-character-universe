@@ -108,6 +108,17 @@ a { color: inherit; text-decoration: none; }
     linear-gradient(135deg, #061824, #073d54 55%, #075f73);
   transition: background 1s ease;
 }
+.theater::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 67% 43%, transparent 0 23%, rgba(2, 15, 25, .05) 52%, rgba(1, 9, 16, .5) 115%),
+    linear-gradient(90deg, rgba(1, 13, 20, .38), transparent 45%);
+  mix-blend-mode: multiply;
+}
 .theater.world-land {
   background:
     radial-gradient(circle at 72% 35%, rgba(255, 219, 100, .38), transparent 25%),
@@ -155,6 +166,7 @@ a { color: inherit; text-decoration: none; }
   top: 50%;
   width: min(420px, 34vw);
   transform: translateY(-43%);
+  text-shadow: 0 2px 18px rgba(0, 10, 18, .38);
 }
 .eyebrow {
   display: flex;
@@ -310,6 +322,13 @@ a { color: inherit; text-decoration: none; }
 }
 .references__copy { padding-top: 30px; }
 .references__copy .eyebrow { color: var(--lime); }
+.asset-credits {
+  margin-top: 28px !important;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,.14);
+  font-size: 11px;
+}
+.asset-credits a { color: var(--lime); border-bottom: 1px solid currentColor; }
 .reference-track {
   display: grid;
   grid-auto-flow: column;
@@ -387,7 +406,11 @@ dialog::backdrop { background: rgba(1,14,20,.76); backdrop-filter: blur(10px); }
   .character-panel__description { font-size: 13px; line-height: 1.65; }
   .stats { margin: 16px 0; }
   .scene-label, .stage-hint { display: none; }
-  #worldCanvas { height: 60%; }
+  #worldCanvas { height: 100%; }
+  .character-panel {
+    padding-top: 64px;
+    background: linear-gradient(180deg, transparent, rgba(4, 19, 21, .54) 25%, rgba(4, 19, 21, .22));
+  }
   .section-heading { grid-template-columns: 1fr; gap: 18px; }
   .section-heading .eyebrow { padding: 0; }
   .cast-grid { grid-template-columns: repeat(2, 1fr); }
