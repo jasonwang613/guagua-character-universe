@@ -24,6 +24,10 @@ scene.add(character);
 const glowGroup = new THREE.Group();
 scene.add(glowGroup);
 
+const portalGroup = new THREE.Group();
+portalGroup.position.set(0, 0.12, -0.72);
+scene.add(portalGroup);
+
 const texture = await new THREE.TextureLoader().loadAsync("./assets/su-gu-zheng.jpg");
 texture.colorSpace = THREE.SRGBColorSpace;
 texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -109,6 +113,45 @@ const ring = new THREE.Mesh(new THREE.RingGeometry(2.45, 2.5, 96), ringMaterial)
 ring.position.set(0, 0.16, -0.32);
 glowGroup.add(ring);
 
+const portalRings = [
+  { radius: 2.18, tube: 0.018, tiltX: 0.48, tiltY: 0.12, opacity: 0.2 },
+  { radius: 2.72, tube: 0.024, tiltX: -0.38, tiltY: 0.3, opacity: 0.15 },
+  { radius: 3.22, tube: 0.015, tiltX: 0.7, tiltY: -0.22, opacity: 0.12 },
+].map((config, index) => {
+  const material = new THREE.MeshBasicMaterial({
+    color: index === 1 ? "#ff8db6" : "#ffc857",
+    transparent: true,
+    opacity: config.opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const portalRing = new THREE.Mesh(new THREE.TorusGeometry(config.radius, config.tube, 12, 120), material);
+  portalRing.rotation.set(config.tiltX, config.tiltY, index * 0.72);
+  portalRing.userData = { ...config, phase: index * 1.8 };
+  portalGroup.add(portalRing);
+  return portalRing;
+});
+
+const bodyAuraGroup = new THREE.Group();
+bodyAuraGroup.position.set(0, -0.42, 0);
+character.add(bodyAuraGroup);
+
+const bodyAuraRings = [-0.055, 0.11].map((depth, index) => {
+  const material = new THREE.MeshBasicMaterial({
+    color: "#ffd45c",
+    transparent: true,
+    opacity: index === 0 ? 0.24 : 0.42,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const auraRing = new THREE.Mesh(new THREE.TorusGeometry(0.76, index === 0 ? 0.034 : 0.022, 14, 96), material);
+  auraRing.position.z = depth;
+  auraRing.scale.set(1.24, 0.43, 1);
+  auraRing.rotation.z = index ? -0.18 : 0.2;
+  bodyAuraGroup.add(auraRing);
+  return auraRing;
+});
+
 const shadow = new THREE.Mesh(
   new THREE.CircleGeometry(1.05, 64),
   new THREE.MeshBasicMaterial({ color: "#6e3f20", transparent: true, opacity: 0.18, depthWrite: false }),
@@ -142,6 +185,7 @@ let pulseStarted = -10;
 let targetTint = new THREE.Color("#ffffff");
 let targetTintAmount = 0;
 let targetHalo = new THREE.Color("#ffc857");
+const portalPink = new THREE.Color("#ff8db6");
 const clock = new THREE.Clock();
 
 function applyState(color) {
@@ -178,10 +222,8 @@ function animate() {
   const t = clock.getElapsedTime();
   const pulseAge = t - pulseStarted;
   const pulse = pulseAge < 1.15 ? Math.sin(Math.min(pulseAge / 1.15, 1) * Math.PI) : 0;
-  // A calm 60-degree sweep in total: 30 degrees to either side.
-  const idleRotation = reducedMotion.matches ? 0 : Math.sin(t * 0.24) * Math.PI / 6;
-
-  character.rotation.y += (idleRotation - character.rotation.y) * 0.012;
+  // Keep the deity facing the audience during idle; depth now lives in the portal and aura.
+  character.rotation.y += (0 - character.rotation.y) * 0.08;
   character.position.y = reducedMotion.matches ? 0 : Math.sin(t * 0.8) * 0.055;
   character.scale.setScalar(1 + pulse * 0.13);
 
@@ -205,6 +247,24 @@ function animate() {
   const haloScale = 0.98 + idleGlow * 0.07 + pulse * 0.24;
   halo.scale.setScalar(haloScale);
   ring.scale.setScalar(haloScale + pulse * 0.12);
+
+  portalGroup.rotation.z = reducedMotion.matches ? 0 : Math.sin(t * 0.16) * 0.08;
+  portalRings.forEach((portalRing, index) => {
+    const config = portalRing.userData;
+    portalRing.rotation.z += reducedMotion.matches ? 0 : (index % 2 ? -0.0007 : 0.00055);
+    portalRing.rotation.x = config.tiltX + Math.sin(t * 0.28 + config.phase) * 0.075;
+    portalRing.material.color.lerp(index === 1 ? portalPink : targetHalo, 0.035);
+    portalRing.material.opacity = config.opacity + idleGlow * 0.09 + pulse * 0.14;
+  });
+
+  bodyAuraGroup.rotation.z = reducedMotion.matches ? 0 : Math.sin(t * 0.72) * 0.13;
+  bodyAuraRings.forEach((auraRing, index) => {
+    auraRing.material.color.lerp(targetHalo, 0.055);
+    auraRing.material.opacity = (index ? 0.34 : 0.18) + idleGlow * (index ? 0.22 : 0.14) + pulse * 0.26;
+    const auraBreath = 1 + idleGlow * 0.09 + pulse * 0.13;
+    auraRing.scale.set(1.24 * auraBreath, 0.43 * auraBreath, 1);
+    auraRing.rotation.z += reducedMotion.matches ? 0 : (index ? -0.0018 : 0.0012);
+  });
 
   stars.forEach((star) => {
     const particleTime = t * star.userData.speed + star.userData.phase;
