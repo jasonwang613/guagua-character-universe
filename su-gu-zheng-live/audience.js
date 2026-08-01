@@ -18,7 +18,7 @@ const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
 camera.position.set(0, 0.1, 9.2);
 
 const character = new THREE.Group();
-character.rotation.x = -0.03;
+character.rotation.set(0, 0, 0);
 scene.add(character);
 
 const glowGroup = new THREE.Group();
@@ -222,9 +222,9 @@ function animate() {
   const t = clock.getElapsedTime();
   const pulseAge = t - pulseStarted;
   const pulse = pulseAge < 1.15 ? Math.sin(Math.min(pulseAge / 1.15, 1) * Math.PI) : 0;
-  // Keep the deity facing the audience during idle; depth now lives in the portal and aura.
-  character.rotation.y += (0 - character.rotation.y) * 0.08;
-  character.position.y = reducedMotion.matches ? 0 : Math.sin(t * 0.8) * 0.055;
+  // Hard-lock the artwork to a front-facing pose. Only a tiny vertical float is allowed.
+  character.rotation.set(0, 0, 0);
+  character.position.set(0, reducedMotion.matches ? 0 : Math.sin(t * 0.8) * 0.035, 0);
   character.scale.setScalar(1 + pulse * 0.13);
 
   const currentTint = uniforms.tint.value;
