@@ -99,12 +99,12 @@ front.position.z = 0.025;
 front.userData.tintUniforms = uniforms;
 character.add(front);
 
-const haloMaterial = new THREE.MeshBasicMaterial({ color: "#ffc857", transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false });
+const haloMaterial = new THREE.MeshBasicMaterial({ color: "#ffc857", transparent: true, opacity: 0.24, blending: THREE.AdditiveBlending, depthWrite: false });
 const halo = new THREE.Mesh(new THREE.CircleGeometry(2.34, 96), haloMaterial);
 halo.position.set(0, 0.16, -0.34);
 glowGroup.add(halo);
 
-const ringMaterial = new THREE.MeshBasicMaterial({ color: "#ffbf47", transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false });
+const ringMaterial = new THREE.MeshBasicMaterial({ color: "#ffbf47", transparent: true, opacity: 0.34, blending: THREE.AdditiveBlending, depthWrite: false });
 const ring = new THREE.Mesh(new THREE.RingGeometry(2.45, 2.5, 96), ringMaterial);
 ring.position.set(0, 0.16, -0.32);
 glowGroup.add(ring);
@@ -118,7 +118,7 @@ shadow.position.set(0, -3.02, -0.28);
 scene.add(shadow);
 
 const stars = [];
-for (let i = 0; i < 34; i += 1) {
+for (let i = 0; i < 56; i += 1) {
   const dot = new THREE.Mesh(
     new THREE.CircleGeometry(0.018 + Math.random() * 0.035, 12),
     new THREE.MeshBasicMaterial({ color: i % 3 === 0 ? "#ff8db6" : "#ffd45c", transparent: true, opacity: 0.35 + Math.random() * 0.5 }),
@@ -126,7 +126,13 @@ for (let i = 0; i < 34; i += 1) {
   const angle = Math.random() * Math.PI * 2;
   const radius = 2.1 + Math.random() * 2.5;
   dot.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius * 0.78 + 0.15, -0.5 - Math.random());
-  dot.userData = { phase: Math.random() * Math.PI * 2, speed: 0.4 + Math.random() * 0.8 };
+  dot.userData = {
+    baseX: dot.position.x,
+    baseY: dot.position.y,
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.4 + Math.random() * 0.8,
+    drift: 0.025 + Math.random() * 0.065,
+  };
   scene.add(dot);
   stars.push(dot);
 }
@@ -172,7 +178,8 @@ function animate() {
   const t = clock.getElapsedTime();
   const pulseAge = t - pulseStarted;
   const pulse = pulseAge < 1.15 ? Math.sin(Math.min(pulseAge / 1.15, 1) * Math.PI) : 0;
-  const idleRotation = reducedMotion.matches ? 0 : Math.sin(t * 0.24) * Math.PI * 0.5;
+  // A calm 60-degree sweep in total: 30 degrees to either side.
+  const idleRotation = reducedMotion.matches ? 0 : Math.sin(t * 0.24) * Math.PI / 6;
 
   character.rotation.y += (idleRotation - character.rotation.y) * 0.012;
   character.position.y = reducedMotion.matches ? 0 : Math.sin(t * 0.8) * 0.055;
@@ -192,14 +199,18 @@ function animate() {
 
   haloMaterial.color.lerp(targetHalo, 0.055);
   ringMaterial.color.copy(haloMaterial.color);
-  haloMaterial.opacity = 0.12 + pulse * 0.52;
-  ringMaterial.opacity = 0.16 + pulse * 0.72;
-  const haloScale = 1 + pulse * 0.24 + Math.sin(t * 1.4) * 0.018;
+  const idleGlow = (Math.sin(t * 1.25) + 1) * 0.5;
+  haloMaterial.opacity = 0.20 + idleGlow * 0.13 + pulse * 0.46;
+  ringMaterial.opacity = 0.27 + idleGlow * 0.16 + pulse * 0.58;
+  const haloScale = 0.98 + idleGlow * 0.07 + pulse * 0.24;
   halo.scale.setScalar(haloScale);
   ring.scale.setScalar(haloScale + pulse * 0.12);
 
   stars.forEach((star) => {
-    star.material.opacity = 0.25 + (Math.sin(t * star.userData.speed + star.userData.phase) + 1) * 0.24 + pulse * 0.25;
+    const particleTime = t * star.userData.speed + star.userData.phase;
+    star.position.x = star.userData.baseX + Math.cos(particleTime) * star.userData.drift;
+    star.position.y = star.userData.baseY + Math.sin(particleTime * 0.82) * star.userData.drift * 1.8;
+    star.material.opacity = 0.32 + (Math.sin(particleTime) + 1) * 0.27 + pulse * 0.2;
   });
 
   renderer.render(scene, camera);

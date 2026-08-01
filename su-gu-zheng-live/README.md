@@ -1,8 +1,8 @@
-# 套骨正・光彩舞台
+# 大羊神・光彩舞台
 
 使用 Three.js 製作的雙頁面互動裝置：
 
-- `audience.html`：觀眾用的 3D 套骨正舞台，點擊角色會發亮與縮放。
+- `audience.html`：觀眾用的 3D 大羊神舞台，點擊角色會發亮與縮放。
 - `controller.html`：操作人員控制台，可切換紅、黃、橘三種色彩或回到原始狀態。
 
 兩頁透過 `BroadcastChannel` 與 `localStorage` 即時同步，適合在同一台電腦的兩個分頁或視窗中使用。
