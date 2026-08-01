@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#fff7dc" />
+    <title>套骨正・光彩舞台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="audience-page">
+    <main class="stage-shell" aria-label="套骨正互動舞台">
+      <div class="ambient ambient-one"></div>
+      <div class="ambient ambient-two"></div>
+      <canvas id="scene" aria-label="可互動的套骨正 3D 公仔"></canvas>
+
+      <header class="audience-header">
+        <div class="brand-mark" aria-hidden="true">骨</div>
+        <div>
+          <p class="eyebrow">MAGICAL GOAT PARADE</p>
+          <h1>套骨正<br /><span>光彩舞台</span></h1>
+        </div>
+      </header>
+
+      <div class="color-readout" aria-live="polite">
+        <span class="status-dot"></span>
+        <span id="color-label">原始彩繪</span>
+      </div>
+
+      <button class="tap-hint" id="tap-hint" type="button">
+        <span class="tap-icon" aria-hidden="true">✦</span>
+        <span><strong>點點套骨正</strong><small>讓牠閃閃發亮</small></span>
+      </button>
+
+      <footer class="audience-footer">
+        <span>互動式 3D 公仔</span>
+        <span aria-hidden="true">◌</span>
+        <span>Three.js</span>
+      </footer>
+
+      <div class="loading-screen" id="loading-screen">
+        <div class="loading-goat">♑</div>
+        <p>套骨正登場中⋯</p>
+      </div>
+    </main>
+    <script type="module" src="./audience.js"></script>
+  </body>
+</html>
