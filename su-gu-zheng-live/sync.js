@@ -12,7 +12,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 const STORAGE_KEY = "great-sheep-stage-state";
-const CONTROLLER_EMAIL = "jasonwang613@gmail.com";
 const firebaseConfig = {
   apiKey: "AIzaSyD4MUTpizIK8X-9_A0OH6sO6bw7VeQBwG8",
   authDomain: "great-sheep-live.firebaseapp.com",
@@ -53,7 +52,7 @@ export function getStageState() {
 }
 
 export async function setStageState(color) {
-  if (auth.currentUser?.email !== CONTROLLER_EMAIL) throw new Error("請先使用授權的 Google 帳號登入");
+  if (!auth.currentUser) throw new Error("請先使用 Google 帳號登入");
   const state = safeState({ color, sentAt: Date.now(), source: "control-console" });
   await set(stageRef, state);
   cacheState(state);
@@ -80,7 +79,7 @@ export function announceAudience() {
 }
 
 export function onControllerAuth(listener) {
-  return onAuthStateChanged(auth, (user) => listener(user?.email === CONTROLLER_EMAIL ? user : null));
+  return onAuthStateChanged(auth, listener);
 }
 
 export async function signInController() {
@@ -89,10 +88,6 @@ export async function signInController() {
   provider.setCustomParameters({ prompt: "select_account" });
   try {
     const result = await signInWithPopup(auth, provider);
-    if (result.user.email !== CONTROLLER_EMAIL) {
-      await signOut(auth);
-      throw new Error(`此控制台僅限 ${CONTROLLER_EMAIL} 使用`);
-    }
     return result.user;
   } catch (error) {
     if (["auth/popup-blocked", "auth/operation-not-supported-in-this-environment"].includes(error?.code)) {
