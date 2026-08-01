@@ -1,5 +1,5 @@
 import * as THREE from "../vendor/three.module.js";
-import { COLOR_STATES, announceAudience, getStageState, subscribeStageState } from "./sync.js?v=20260801-3";
+import { COLOR_STATES, announceAudience, getStageState, subscribeStageState } from "./sync.js?v=20260801-4";
 
 const canvas = document.querySelector("#scene");
 const loadingScreen = document.querySelector("#loading-screen");
