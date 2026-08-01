@@ -7,7 +7,7 @@ import {
   signOutController,
   subscribeAudience,
   subscribeStageState,
-} from "./sync.js?v=20260801-4";
+} from "./sync.js?v=20260802-5";
 
 const buttons = [...document.querySelectorAll(".cue-button")];
 const currentColor = document.querySelector("#current-color");
@@ -80,7 +80,7 @@ onControllerAuth((user) => {
   buttons.forEach((button) => { button.disabled = !signedIn; });
   authButton.textContent = signedIn ? "登出" : "登入 Google";
   authTitle.textContent = signedIn ? "控制權已啟用" : "控制權尚未登入";
-  authNote.textContent = signedIn ? user.email : "使用指定的 Google 帳號即可跨裝置控制";
+  authNote.textContent = signedIn ? user.email : "使用任何 Google 帳號即可跨裝置控制";
   document.querySelector(".auth-card").classList.toggle("is-authorized", signedIn);
 });
 
