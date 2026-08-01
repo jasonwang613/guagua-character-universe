@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#182820" />
+    <title>大羊神・舞台控制台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="controller-page">
+    <main class="control-shell">
+      <section class="control-copy">
+        <p class="eyebrow">LIVE COLOR CONSOLE</p>
+        <h1>大羊神<br /><span>舞台控制台</span></h1>
+        <p class="control-intro">選擇一道光，觀眾舞台上的大羊神會立即換上相同色彩。</p>
+
+        <div class="connection-card">
+          <div class="connection-light"></div>
+          <div>
+            <strong id="connection-title">連動已待命</strong>
+            <span id="connection-note">請在另一個分頁開啟觀眾畫面</span>
+          </div>
+        </div>
+
+        <a class="audience-link" href="./audience.html" target="_blank" rel="noopener">
+          開啟觀眾畫面 <span aria-hidden="true">↗</span>
+        </a>
+      </section>
+
+      <section class="control-panel" aria-labelledby="panel-title">
+        <div class="panel-heading">
+          <span>01</span>
+          <div>
+            <p>COLOR CUE</p>
+            <h2 id="panel-title">選擇舞台顏色</h2>
+          </div>
+        </div>
+
+        <div class="cue-grid">
+          <button class="cue-button cue-red" data-color="red" type="button">
+            <span class="cue-orb"></span><span class="cue-copy"><strong>紅色</strong><small>RED GLOW</small></span><span class="cue-key">1</span>
+          </button>
+          <button class="cue-button cue-yellow" data-color="yellow" type="button">
+            <span class="cue-orb"></span><span class="cue-copy"><strong>黃色</strong><small>YELLOW GLOW</small></span><span class="cue-key">2</span>
+          </button>
+          <button class="cue-button cue-orange" data-color="orange" type="button">
+            <span class="cue-orb"></span><span class="cue-copy"><strong>橘色</strong><small>ORANGE GLOW</small></span><span class="cue-key">3</span>
+          </button>
+          <button class="cue-button cue-reset" data-color="original" type="button">
+            <span class="reset-symbol">↺</span><span class="cue-copy"><strong>清除色彩</strong><small>BACK TO ORIGINAL</small></span><span class="cue-key">4</span>
+          </button>
+        </div>
+
+        <div class="now-playing">
+          <span>目前舞台</span>
+          <strong id="current-color">原始彩繪</strong>
+          <div class="now-swatch" id="now-swatch"></div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./controller.js"></script>
+  </body>
+</html>
