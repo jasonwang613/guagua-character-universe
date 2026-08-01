@@ -7,7 +7,7 @@ import {
   signOutController,
   subscribeAudience,
   subscribeStageState,
-} from "./sync.js";
+} from "./sync.js?v=20260801-3";
 
 const buttons = [...document.querySelectorAll(".cue-button")];
 const currentColor = document.querySelector("#current-color");
