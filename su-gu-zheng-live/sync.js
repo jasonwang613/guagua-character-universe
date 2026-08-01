@@ -1,5 +1,27 @@
-const CHANNEL_NAME = "su-gu-zheng-live-color";
-const STORAGE_KEY = "su-gu-zheng-stage-state";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { getDatabase, onValue, ref, set } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+import {
+  browserLocalPersistence,
+  getAuth,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  setPersistence,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+const STORAGE_KEY = "great-sheep-stage-state";
+const CONTROLLER_EMAIL = "jasonwang613@gmail.com";
+const firebaseConfig = {
+  apiKey: "AIzaSyD4MUTpizIK8X-9_A0OH6sO6bw7VeQBwG8",
+  authDomain: "great-sheep-live.firebaseapp.com",
+  databaseURL: "https://great-sheep-live-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "great-sheep-live",
+  storageBucket: "great-sheep-live.firebasestorage.app",
+  messagingSenderId: "794518471281",
+  appId: "1:794518471281:web:be3682dfee228a475a91d0",
+};
 
 export const COLOR_STATES = {
   original: { label: "原始彩繪", hex: "#f4b55f" },
@@ -8,55 +30,79 @@ export const COLOR_STATES = {
   orange: { label: "橘色光彩", hex: "#ff8a2a" },
 };
 
-const channel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const auth = getAuth(app);
+const stageRef = ref(database, "stage");
+const connectedRef = ref(database, ".info/connected");
 
-export function getStageState() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved && COLOR_STATES[saved.color]) return saved;
-  } catch (_) {
-    // Ignore invalid data and restore the safe default.
-  }
-  return { color: "original", sentAt: Date.now() };
+function safeState(value) {
+  return {
+    color: COLOR_STATES[value?.color] ? value.color : "original",
+    sentAt: Number(value?.sentAt) || Date.now(),
+    source: typeof value?.source === "string" ? value.source : "default",
+  };
 }
 
-export function setStageState(color) {
-  const state = { color: COLOR_STATES[color] ? color : "original", sentAt: Date.now() };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  channel?.postMessage({ type: "stage-state", ...state });
+function cacheState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { /* Private mode fallback. */ }
+}
+
+export function getStageState() {
+  try { return safeState(JSON.parse(localStorage.getItem(STORAGE_KEY))); } catch (_) { return safeState(null); }
+}
+
+export async function setStageState(color) {
+  if (auth.currentUser?.email !== CONTROLLER_EMAIL) throw new Error("請先使用授權的 Google 帳號登入");
+  const state = safeState({ color, sentAt: Date.now(), source: "control-console" });
+  await set(stageRef, state);
+  cacheState(state);
   return state;
 }
 
-export function subscribeStageState(listener) {
-  const onChannel = (event) => {
-    if (event.data?.type === "stage-state") listener(event.data);
-  };
-  const onStorage = (event) => {
-    if (event.key !== STORAGE_KEY || !event.newValue) return;
-    try { listener(JSON.parse(event.newValue)); } catch (_) { /* no-op */ }
-  };
-  channel?.addEventListener("message", onChannel);
-  window.addEventListener("storage", onStorage);
-  return () => {
-    channel?.removeEventListener("message", onChannel);
-    window.removeEventListener("storage", onStorage);
-  };
-}
-
-export function announceAudience() {
-  channel?.postMessage({ type: "audience-ready", sentAt: Date.now() });
-  channel?.addEventListener("message", (event) => {
-    if (event.data?.type === "audience-check") {
-      channel.postMessage({ type: "audience-ready", sentAt: Date.now() });
-    }
-  });
+export function subscribeStageState(listener, onError) {
+  return onValue(stageRef, (snapshot) => {
+    if (!snapshot.exists()) return;
+    const state = safeState(snapshot.val());
+    cacheState(state);
+    listener(state);
+  }, onError);
 }
 
 export function subscribeAudience(listener) {
-  const handler = (event) => {
-    if (event.data?.type === "audience-ready") listener(event.data);
-  };
-  channel?.addEventListener("message", handler);
-  channel?.postMessage({ type: "audience-check", sentAt: Date.now() });
-  return () => channel?.removeEventListener("message", handler);
+  return onValue(connectedRef, (snapshot) => {
+    if (snapshot.val() === true) listener({ connected: true, sentAt: Date.now() });
+  });
+}
+
+export function announceAudience() {
+  // Realtime Database keeps the audience subscribed across browsers and devices.
+}
+
+export function onControllerAuth(listener) {
+  return onAuthStateChanged(auth, (user) => listener(user?.email === CONTROLLER_EMAIL ? user : null));
+}
+
+export async function signInController() {
+  await setPersistence(auth, browserLocalPersistence);
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  try {
+    const result = await signInWithPopup(auth, provider);
+    if (result.user.email !== CONTROLLER_EMAIL) {
+      await signOut(auth);
+      throw new Error(`此控制台僅限 ${CONTROLLER_EMAIL} 使用`);
+    }
+    return result.user;
+  } catch (error) {
+    if (["auth/popup-blocked", "auth/operation-not-supported-in-this-environment"].includes(error?.code)) {
+      await signInWithRedirect(auth, provider);
+      return null;
+    }
+    throw error;
+  }
+}
+
+export function signOutController() {
+  return signOut(auth);
 }

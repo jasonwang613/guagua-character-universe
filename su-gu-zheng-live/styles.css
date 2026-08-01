@@ -262,6 +262,35 @@ body {
   border-radius: 15px;
   background: rgba(255,255,255,.045);
 }
+.auth-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 410px;
+  margin: 24px 0 12px;
+  padding: 14px 14px 14px 18px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  background: rgba(255,255,255,.045);
+}
+.auth-card > div { display: grid; gap: 3px; }
+.auth-card strong { font-size: 13px; }
+.auth-card span { color: #8d9f95; font-size: 11px; }
+.auth-card button {
+  flex: 0 0 auto;
+  padding: 9px 13px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background: #f9f5df;
+  color: #244034;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.auth-card.is-authorized { border-color: rgba(106,224,173,.35); background: rgba(106,224,173,.07); }
+.auth-card button:disabled { cursor: wait; opacity: .6; }
 .connection-light { width: 11px; height: 11px; border-radius: 50%; background: #f8c34d; box-shadow: 0 0 0 5px rgba(248,195,77,.12); }
 .connection-card.is-live .connection-light { background: #6ae0ad; box-shadow: 0 0 0 5px rgba(106,224,173,.12), 0 0 18px #6ae0ad; }
 .connection-card div:last-child { display: grid; gap: 2px; }
@@ -310,6 +339,7 @@ body {
   transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
 }
 .cue-button:hover { transform: translateY(-3px); border-color: rgba(36,55,47,.3); box-shadow: 0 10px 20px rgba(36,55,47,.08); }
+.cue-button:disabled { cursor: not-allowed; filter: grayscale(.75); opacity: .48; transform: none; }
 .cue-button:focus-visible { outline: 3px solid #66bfa0; outline-offset: 3px; }
 .cue-button.is-active { border-color: var(--cue, #315b4a); background: #fff; box-shadow: inset 0 -3px 0 var(--cue, #315b4a), 0 12px 24px rgba(36,55,47,.1); }
 .cue-red { --cue: #ff3d46; }
